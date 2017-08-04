@@ -1,5 +1,5 @@
 {
-  "name": "@slide/api",
+  "name": "@cellside/slide-api",
   "version": "0.0.1",
   "description": "Salesforce Light IDE",
   "author": {
@@ -7,7 +7,7 @@
     "email": "therealnerdybeast@gmail.com"
   },
   "license": "ISC",
-  "keywords": ["salesforce", "slide"],
+  "keywords": [],
   "repository": {
     "type": "git",
     "url": "https://github.com/nerdybeast/slide-api.git"
