@@ -1,0 +1,16 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"sourceMap": true,
+		"outDir": "dist",
+		"lib": [
+			//Tells the compiler to understand es6 features such as Array.prototype.includes()
+			"es2016"
+		]
+	},
+	"include": [
+		"src/**/*"
+	]
+}
