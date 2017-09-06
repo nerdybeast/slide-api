@@ -12,6 +12,8 @@ export function api(appSettingsDir: string) {
 
 	let app = express();
 
+	app.disable('etag');
+
 	app.use(morgan('dev'));
 	app.use(cors());
 	app.use(bodyParser.urlencoded({ extended: false }));
