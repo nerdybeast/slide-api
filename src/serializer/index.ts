@@ -12,6 +12,9 @@ let models = [{
 }, {
 	type: 'version',
 	schema: {}
+}, {
+	type: 'metadata',
+	schema: {}
 }];
 
 models.forEach(model => serializer.register(model.type, model.schema));
