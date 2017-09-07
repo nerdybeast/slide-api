@@ -3,7 +3,7 @@ const jsforce = require('jsforce');
 import Debug from '../../classes/Debug';
 import serializer from '../../serializer';
 import loginUrl from '../../classes/helpers/login-url';
-import { Org } from '../../classes/Org';
+import { SalesforceOrg } from '../../classes/SalesforceOrg';
 
 let debug = new Debug('OAUTH2 ROUTER');
 let router = Router();
@@ -41,7 +41,7 @@ router.get('/callback', async (req, res) => {
 	promises.then(async results => {
 
 		let userInfo = results[0];
-		let org = new Org();
+		let org = new SalesforceOrg();
 		
 		newOrgId = userInfo.organization_id;
 		userInfo.name = newOrgName;

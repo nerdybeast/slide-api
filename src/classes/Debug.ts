@@ -8,23 +8,35 @@ class Debug {
 	errorDebugger: any;
 
 	constructor(name: string) {
-		let debuggerName = 'slide-api'
+		const debuggerName = '@cellside/slide-api';
 		this.verboseDebugger = debugModule(`${debuggerName}:verbose ${name}`);
 		this.infoDebugger = debugModule(`${debuggerName}:info ${name}`);
 		this.warnDebugger = debugModule(`${debuggerName}:warn ${name}`);
 		this.errorDebugger = debugModule(`${debuggerName}:error ${name}`);
 	}
 
-	private getMessage(message: string, obj?: any) : string {
-		return obj ? `${message} => %o` : message;
+	verbose(message: string, obj?: any) {
+		this.write(this.verboseDebugger, message, obj);
 	}
 
 	info(message: string, obj?: any) {
-		this.infoDebugger(this.getMessage(message, obj), obj);
+		this.write(this.infoDebugger, message, obj);
+	}
+
+	warn(message: string, obj?: any) {
+		this.write(this.warnDebugger, message, obj);
 	}
 
 	error(message: string, obj?: any) {
-		this.errorDebugger(this.getMessage(message, obj), obj);
+		this.write(this.errorDebugger, message, obj);
+	}
+
+	private write(logger: any, message: string, obj?: any) {
+		if(obj) {
+			logger(`${message} => %o`, obj);
+		} else {
+			logger(message);
+		}
 	}
 }
 

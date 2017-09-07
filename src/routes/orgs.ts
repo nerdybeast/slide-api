@@ -1,42 +1,57 @@
 import express = require('express');
 import serializer from '../serializer';
-import { Org } from '../classes/Org';
+import { SalesforceOrg } from '../classes/SalesforceOrg';
 import db from '../classes/Database';
 import urlVersionInjection from '../classes/helpers/url-version-injection';
 import { Metadata } from "../classes/Metadata";
+import Debug from '../classes/Debug';
 
+let debug = new Debug('orgs.ts');
 let router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
 
-	let org = new Org();
+	let salesforceOrg = new SalesforceOrg();
+	let orgs = await salesforceOrg.findAll();
 
-	org.findAll().then(orgs => {
-		orgs.forEach(org => org.urls = urlVersionInjection('v40.0', org.urls));
-		const result = serializer.serialize('org', orgs);
-		return res.json(result);
-	});
+	orgs.forEach(org => org.urls = urlVersionInjection('v40.0', org.urls));
+	const result = serializer.serialize('org', orgs);
+	return res.json(result);
 
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
 
-	db.findById(req.params.id).then(org => {
+	try {
+
+		let salesforceOrg = new SalesforceOrg();
+		let org = await salesforceOrg.getById(req.params.id);
+		
 		return res.json(serializer.serialize('org', org));
-	});
+
+	} catch (error) {
+		return res.status(error.statusCode).json({errors:[error]});
+	}
 
 });
 
-router.get('/:id/availablesubscription', (req, res) => {
+router.get('/:id/availablesubscription', async (req, res) => {
 
-	db.findById(req.params.id).then(async org => {
+	try {
+
+		let salesforceOrg = new SalesforceOrg();
+		let org = await salesforceOrg.getById(req.params.id);
 		
 		let metadata = new Metadata(org);
 		let availableMetadata = await metadata.availableMetadataWithChildRecords();
 		const result = serializer.serialize('metadata', availableMetadata);
 
 		return res.json(result);
-	});
+
+	} catch (error) {
+		debug.error(`available subscription error`, error);
+		return res.status(error.statusCode).json({errors:[error]});
+	}
 
 });
 

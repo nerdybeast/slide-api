@@ -1,6 +1,7 @@
 import db from './Database';
+import { ServiceError } from './ServiceError';
 
-export class Org {
+export class SalesforceOrg {
 
 	async saveNew(org) {
 
@@ -24,10 +25,23 @@ export class Org {
 		}).then(result => result.docs);
 	}
 
-	findAll() {
-		return db.find({
+	async findAll() {
+		
+		let result = await db.find({
 			selector: { type: 'org' }
-		}).then(result => result.docs);
+		});
+
+		return result.docs || [];
+
+		// return db.find({
+		// 	selector: { type: 'org' }
+		// }).then(result => result.docs);
+	}
+
+	async getById(orgId: string) {
+		let org = await db.findById(orgId);
+		if(!org) throw new ServiceError(404, 'INVALID_ORG_ID', 'Invalid Org Id', `No org found with id "${orgId}"`);
+		return org;
 	}
 
 }

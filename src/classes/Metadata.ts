@@ -1,6 +1,7 @@
 import { Salesforce } from './Salesforce';
 import { MetadataObject } from '../models/MetadataObject';
-import { MetadataTypeDescription } from "../models/MetadataTypeDescription";
+import { MetadataObjectBase } from '../models/MetadataObjectBase';
+import { chunk, flatten } from '../utilities';
 
 export class Metadata extends Salesforce {
 
@@ -11,57 +12,44 @@ export class Metadata extends Salesforce {
 	/**
 	 * Returns a list of Metadata objects with only a few properties containing a value (see MetadataObject constructor).
 	 */
-	async availableMetadata() : Promise<MetadataObject[]> {
+	async availableMetadata() : Promise<MetadataObjectBase[]> {
 
-		let globalMetadataDescription = await this.orgGlobalMetadataDescribe();
+		let describeMetadataResult = await this.orgGlobalMetadataDescribe();
 		
 		//"metaFile" seems to be true for metadata types that actually have a downloadable file...
-		return globalMetadataDescription.metadataObjects.filter(x => x.metaFile === true).map(x => new MetadataObject(x));
+		return describeMetadataResult.metadataObjects.filter(x => x.metaFile === true);
 	}
 
-	async metadataListByTypes(metadataObjects: MetadataObject[]) : Promise<MetadataObject[]> {
+	async metadataListByTypes(metadataObjectBases: MetadataObjectBase[]) : Promise<MetadataObject[]> {
 		
-		//sf:LIMIT_EXCEEDED: LIMIT_EXCEEDED: No more than 3 allowed in request
-		// let typesOptions = types.map(type => {
-		// 	return { type };
-		// });
-		
-		// return this.conn.metadata.list(typesOptions);
-
-		let metadataListPromises = metadataObjects.map(x => this.conn.metadata.list({ type: x.type }));
-		let metadataLists = await Promise.all(metadataListPromises);
-
-		let result: MetadataObject[] = [];
-
-		metadataLists.forEach(list => {
+		//Have to do chunks of 3 or this error occurs: "sf:LIMIT_EXCEEDED: LIMIT_EXCEEDED: No more than 3 allowed in request"
+		let chunked = chunk(metadataObjectBases, 3).map((metaObjChunk: MetadataObjectBase[]) => {
 			
-			if(list) {
-				
-				if(Array.isArray(list)) {
-					
-					(<MetadataObject[]>list).forEach(x => {
-						result.push(combineMetadataObjects(metadataObjects, x));
-					});
+			let query = metaObjChunk.map((metaObj: MetadataObjectBase) => {
+				return { type: metaObj.xmlName };
+			});
 
+			return this.getMetadataList(query);
+		});
+		
+		let metadataList = <MetadataObject[]>flatten(await Promise.all(chunked));
 
-				} else {
-					result.push(combineMetadataObjects(metadataObjects, list));
-				}
-			}
+		metadataList.forEach(meta => {
+			let mainObj = metadataObjectBases.find(x => x.xmlName === meta.type);
+			//meta.addPropertiesFromDescribeCall(mainObj);
+			meta.directoryName = mainObj.directoryName;
+			meta.inFolder = mainObj.inFolder;
+			meta.metaFile = mainObj.metaFile;
+			meta.suffix = mainObj.suffix;
+			meta.xmlName = mainObj.xmlName;
 		});
 
-		return result;
+		return metadataList;
 	}
 
 	async availableMetadataWithChildRecords() : Promise<MetadataObject[]> {
-		let metadataObjects = await this.availableMetadata();
-		metadataObjects = await this.metadataListByTypes(metadataObjects);
+		let metadataObjectBases = await this.availableMetadata();
+		let metadataObjects = await this.metadataListByTypes(metadataObjectBases);
 		return metadataObjects;
 	}
-}
-
-function combineMetadataObjects(objectsFromDescribeCall: MetadataObject[], objFromListCall: MetadataObject) : MetadataObject {
-	let mainObj = objectsFromDescribeCall.find(x => x.type === objFromListCall.type);
-	mainObj.addPropertiesFromMetadataListCall(objFromListCall);
-	return mainObj;
 }

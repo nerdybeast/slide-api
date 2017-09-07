@@ -1,43 +1,38 @@
-import { MetadataTypeDescription } from "./MetadataTypeDescription";
+import { MetadataObjectBase } from './MetadataObjectBase';
 
-export class MetadataObject {
+export class MetadataObject extends MetadataObjectBase {
 	createdById: string; //"005f4000000ttSAAAY"
 	createdByName: string; //"Michael Penrod"
 	createdDate: string; //"2017-08-18T02:05:34.000Z"
-	directoryName: string; //"staticresources"
 	fileName: string; //"staticresources/Test1.resource"
 	fullName: string; //"Test1"
 	id: string; //"081f4000000IuYpAAK"
-	inFolder: boolean;
 	lastModifiedById: string; //"005f4000000ttSAAAY"
 	lastModifiedByName: string; //"Michael Penrod"
 	lastModifiedDate: string; //"2017-08-21T23:46:10.000Z"
 	manageableState: string; //"unmanaged"
-	metaFile: boolean;
-	suffix: string; //"resource"
 	type: string; //"StaticResource"
 
-	constructor(metadataObject?: any) {
-
-		if(!metadataObject) return;
-
-		this.directoryName = metadataObject.directoryName;
-		this.inFolder = metadataObject.inFolder;
-		this.metaFile = metadataObject.metaFile;
-		this.suffix = metadataObject.suffix;
-		this.type = metadataObject.xmlName;
+	constructor(metaBase?: MetadataObjectBase, metaObject?: MetadataObject) {
+		
+		super(metaBase);
+		
+		if(metaObject) {
+			this.setOwnProperties(metaObject);
+		}
 	}
 
-	addPropertiesFromMetadataListCall(metadataObject: MetadataObject) : void {
-		this.createdById = metadataObject.createdById;
-		this.createdByName = metadataObject.createdByName;
-		this.createdDate = metadataObject.createdDate;
-		this.fileName = metadataObject.fileName;
-		this.fullName = metadataObject.fullName;
-		this.id = metadataObject.id;
-		this.lastModifiedById = metadataObject.lastModifiedById;
-		this.lastModifiedByName = metadataObject.lastModifiedByName;
-		this.lastModifiedDate = metadataObject.lastModifiedDate;
-		this.manageableState = metadataObject.manageableState;
+	setOwnProperties(metaObject: MetadataObject) : void {
+		this.createdById = metaObject.createdById;
+		this.createdByName = metaObject.createdByName;
+		this.createdDate = metaObject.createdDate;
+		this.fileName = metaObject.fileName;
+		this.fullName = metaObject.fullName;
+		this.id = metaObject.id;
+		this.lastModifiedById = metaObject.lastModifiedById;
+		this.lastModifiedByName = metaObject.lastModifiedByName;
+		this.lastModifiedDate = metaObject.lastModifiedDate;
+		this.manageableState = metaObject.manageableState;
+		this.type = metaObject.type;
 	}
 }
